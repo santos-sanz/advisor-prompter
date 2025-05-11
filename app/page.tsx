@@ -2,10 +2,8 @@
 
 import type React from "react"
 import { buildPrompt } from "@/lib/promptTemplate";
-// Import the component using dynamic import for client-only code
 import dynamic from 'next/dynamic';
 
-// Use dynamic import with ssr: false to ensure client-only rendering
 const PdfClient = dynamic(() => import('@/components/pdf-client'), { ssr: false });
 
 import { useState, useRef, useEffect } from "react"
@@ -18,6 +16,12 @@ import { ThemeToggle } from "@/components/theme-toggle"
 const inter = Inter({ subsets: ["latin"] })
 
 export default function PromptBuilder() {
+  // Theme toggle button fixed at top left
+  const themeToggle = (
+    <div className="fixed top-4 left-4 z-50">
+      <ThemeToggle />
+    </div>
+  );
   const [step, setStep] = useState(1)
   const [file, setFile] = useState<File | null>(null)
   const [goal, setGoal] = useState("")
@@ -30,9 +34,10 @@ export default function PromptBuilder() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [promptCollapsed, setPromptCollapsed] = useState(true)
+const [extractedExpanded, setExtractedExpanded] = useState(false)
+const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
 
   const handleNextStep = () => {
-    // Validate current step requirements before proceeding
     if (step === 1 && !file) {
       toast({
         title: "Missing information",
@@ -41,7 +46,6 @@ export default function PromptBuilder() {
       });
       return;
     }
-    
     setFadeOut(true)
     setTimeout(() => {
       setStep(step + 1)
@@ -60,8 +64,6 @@ export default function PromptBuilder() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const pdfFile = e.target.files[0]
-      
-      // Validate file type
       if (pdfFile.type !== 'application/pdf') {
         toast({
           title: "Invalid file",
@@ -70,17 +72,14 @@ export default function PromptBuilder() {
         });
         return;
       }
-      
-      // Show loading toast
       toast({
         title: "Processing",
         description: "Extracting content from PDF...",
         duration: 3000,
       });
-      
-      // Set file immediately - this will trigger PDF extraction via the PdfExtractor component
       setFile(pdfFile);
-      setExtractedMarkdown(""); // Clear previous markdown
+      setExtractedMarkdown("");
+      setExtractedExpanded(false);
     }
   }
 
@@ -88,8 +87,6 @@ export default function PromptBuilder() {
     e.preventDefault()
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const pdfFile = e.dataTransfer.files[0]
-      
-      // Validate file type
       if (pdfFile.type !== 'application/pdf') {
         toast({
           title: "Invalid file",
@@ -98,17 +95,13 @@ export default function PromptBuilder() {
         });
         return;
       }
-      
-      // Show loading toast
       toast({
         title: "Processing",
         description: "Extracting content from PDF...",
         duration: 3000,
       });
-      
-      // Set file immediately - this will trigger PDF extraction via the PdfExtractor component
       setFile(pdfFile);
-      setExtractedMarkdown(""); // Clear previous markdown
+      setExtractedMarkdown("");
     }
   }
 
@@ -130,7 +123,6 @@ export default function PromptBuilder() {
 
   const copyPrompt = async () => {
     try {
-      // Try the modern clipboard API first
       if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
         await navigator.clipboard.writeText(prompt)
         toast({
@@ -140,19 +132,15 @@ export default function PromptBuilder() {
         })
         return
       }
-      
-      // Fallback to using a temporary textarea element
       const textArea = document.createElement('textarea')
       textArea.value = prompt
-      textArea.style.position = 'fixed'  // Avoid scrolling to bottom
+      textArea.style.position = 'fixed'
       textArea.style.opacity = '0'
       document.body.appendChild(textArea)
       textArea.focus()
       textArea.select()
-      
       const successful = document.execCommand('copy')
       document.body.removeChild(textArea)
-      
       if (successful) {
         toast({
           title: "Prompt copied",
@@ -163,7 +151,6 @@ export default function PromptBuilder() {
         throw new Error('Failed to copy')
       }
     } catch (error) {
-      // Provide more detailed error information for debugging
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Copy failed:', { message: errorMessage, stack: error instanceof Error ? error.stack : null });
       toast({
@@ -187,27 +174,18 @@ export default function PromptBuilder() {
   }
 
   useEffect(() => {
-    // Update prompt in two scenarios:
-    // 1. When we have extractedMarkdown and need to prepare for navigation
-    // 2. When we reach step 4 (final prompt view)
     if (extractedMarkdown || step === 4) {
       const profileText = extractedMarkdown || (file ? `[Pending processing: ${file.name}]` : "[No CV uploaded]");
-      const currentGoal = goal || ""; // Use empty string if goal not selected yet
+      const currentGoal = goal || "";
       setPrompt(buildPrompt(profileText, currentGoal, extraContext));
     }
   }, [step, extractedMarkdown, file, goal, extraContext])
 
-  // Handle PDF extraction results
   const handleExtracted = (markdown: string) => {
     setExtractedMarkdown(markdown);
-    toast({
-      title: "Success",
-      description: "PDF content extracted. You can proceed to the next step.",
-      duration: 3000,
-    });
+    // No toast on successful extraction
   };
 
-  // Handle PDF extraction errors
   const handleExtractionError = (error: Error) => {
     console.error("Error processing PDF:", error);
     toast({
@@ -218,34 +196,27 @@ export default function PromptBuilder() {
   };
 
   return (
-    <div className={`${inter.className} flex min-h-screen flex-col items-center justify-center bg-background p-4`}>
-      {/* Client-side only PDF extractor */}
-      {file && (
-        <PdfClient
-          file={file}
-          onExtracted={handleExtracted}
-          onProcessingChange={setIsProcessing}
-        />
-      )}
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-      <div className="w-full max-w-xl rounded-lg bg-card p-8 shadow-lg">
-        <h1 className="mb-2 text-center text-2xl font-bold text-[#1f1f1f]">
-          Advisor Prompter
-        </h1>
-        <p className="mb-8 text-center text-sm text-gray-500">
-          Follow the steps to build your personalized prompt.
-        </p>
-        <div
-          className={`transition-opacity duration-250 ${fadeOut ? "opacity-0" : "opacity-100"}`}
-        >
+    <>
+      {themeToggle}
+      <div className={`${inter.className} flex min-h-screen flex-col items-center justify-center bg-background p-4`}>
+        {/* Client-side only PDF extractor */}
+        {file && (
+          <PdfClient
+            file={file}
+            onExtracted={handleExtracted}
+            onProcessingChange={setIsProcessing}
+          />
+        )}
+        <div className="w-full max-w-2xl rounded-xl bg-white shadow-lg p-8">
+          <div className="mb-8 flex items-center justify-center">
+            <h1 className="text-3xl font-bold text-center text-foreground">CV Advisor Prompt Builder</h1>
+          </div>
           {step === 1 && (
             <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-[#1f1f1f]">Your details</h2>
+              <h2 className="mb-6 text-center text-xl font-semibold text-foreground">Your details</h2>
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm text-primary">
-                  <strong>Your privacy is important:</strong> Files are sent securely to our server for processing and are not permanently stored.
+                  <strong>Your privacy is important:</strong> Files are processed locally in your browser and never sent to a server.
                 </p>
               </div>
               <div>
@@ -277,27 +248,39 @@ export default function PromptBuilder() {
                   )}
                 </div>
                 {file && !isProcessing && (
-                  <div className="mt-4 flex items-center text-green-600">
+                  <div className="mt-4 flex items-center text-success">
                     <CheckCircle className="mr-2 h-5 w-5" />
                     File uploaded successfully
                   </div>
                 )}
                 {extractedMarkdown && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium mb-2 text-[#1f1f1f]">Extracted Markdown:</label>
-                    <pre className="bg-gray-100 p-2 rounded text-xs whitespace-pre-wrap max-h-60 overflow-auto border border-gray-200">{extractedMarkdown}</pre>
-                  </div>
-                )}
+  <div className="mt-4">
+    <label
+      className="block text-sm font-medium mb-2 text-foreground cursor-pointer select-none"
+      onClick={() => setExtractedExpanded((v) => !v)}
+      aria-expanded={extractedExpanded}
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setExtractedExpanded(v => !v) }}
+      style={{ userSelect: 'none' }}
+    >
+      Extracted Markdown: <span className="ml-1 text-xs text-muted-foreground">[{extractedExpanded ? 'collapse' : 'expand'}]</span>
+    </label>
+    {extractedExpanded && (
+      <pre
+        className="bg-muted p-2 rounded text-xs whitespace-pre-wrap border border-border transition-all duration-200 max-h-60 overflow-auto"
+      >
+        {extractedMarkdown}
+      </pre>
+    )}
+  </div>
+)}
               </div>
               <div className="mt-6 flex justify-between">
                 <Button variant="outline" onClick={handlePrevStep} disabled>
                   Back
                 </Button>
                 <Button 
-                  onClick={() => {
-                    console.log('Next button clicked, file:', file?.name);
-                    handleNextStep();
-                  }} 
+                  onClick={handleNextStep}
                   disabled={!file}
                 >
                   Next
@@ -308,7 +291,7 @@ export default function PromptBuilder() {
 
           {step === 2 && (
             <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-[#1f1f1f]">What's your goal?</h2>
+              <h2 className="mb-6 text-center text-xl font-semibold text-foreground">What's your goal?</h2>
               <div className="mb-6 grid gap-4">
                 {[
                   { id: "new-job", title: "Get a new job", desc: "Find opportunities in your field" },
@@ -318,10 +301,10 @@ export default function PromptBuilder() {
                   <div
                     key={option.id}
                     onClick={() => setGoal(option.id)}
-                    className={`cursor-pointer rounded-lg border p-4 transition-colors duration-150 ${goal === option.id ? "border-[#4f46e5] bg-[#f0f0ff]" : "border-[#e5e7eb] hover:border-[#c5c6cc]"}`}
+                    className={`cursor-pointer rounded-lg border p-4 transition-colors duration-150 ${goal === option.id ? "border-primary bg-muted" : "border-border hover:border-primary/40"}`}
                   >
-                    <h3 className="font-medium text-[#1f1f1f]">{option.title}</h3>
-                    <p className="text-sm text-gray-500">{option.desc}</p>
+                    <h3 className="font-medium text-foreground">{option.title}</h3>
+                    <p className="text-sm text-muted-foreground">{option.desc}</p>
                   </div>
                 ))}
               </div>
@@ -337,20 +320,76 @@ export default function PromptBuilder() {
           )}
 
           {step === 3 && (
-            <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-[#1f1f1f]">Extra context</h2>
-              <div className="mb-2">
-                <textarea
-                  ref={textareaRef}
-                  placeholder="Add any additional details about your situation, preferences, or specific questions you have..."
-                  className="w-full resize-none rounded-lg border border-[#e5e7eb] p-3 text-[#1f1f1f] focus:border-[#4f46e5] focus:outline-none"
-                  value={extraContext}
-                  onChange={handleTextareaChange}
-                  rows={4}
-                  maxLength={500}
-                ></textarea>
-                <div className="text-right text-xs text-gray-500">{extraContext.length}/500</div>
-              </div>
+  <div>
+    <h2 className="mb-6 text-center text-xl font-semibold text-foreground">Extra context</h2>
+    <div className="mb-4">
+      <label htmlFor="output-language" className="block text-sm font-medium mb-2 text-foreground">Output language</label>
+      <select
+        id="output-language"
+        className="w-full rounded-lg border border-border p-2 text-foreground bg-background focus:border-primary focus:outline-none"
+        value={outputLanguage}
+        onChange={e => setOutputLanguage(e.target.value)}
+      >
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+        <option value="zh">Chinese (Simplified)</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="ru">Russian</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+        <option value="tr">Turkish</option>
+        <option value="pl">Polish</option>
+        <option value="nl">Dutch</option>
+        <option value="sv">Swedish</option>
+        <option value="fi">Finnish</option>
+        <option value="no">Norwegian</option>
+        <option value="da">Danish</option>
+        <option value="el">Greek</option>
+        <option value="he">Hebrew</option>
+        <option value="th">Thai</option>
+        <option value="cs">Czech</option>
+        <option value="hu">Hungarian</option>
+        <option value="ro">Romanian</option>
+        <option value="bg">Bulgarian</option>
+        <option value="uk">Ukrainian</option>
+        <option value="id">Indonesian</option>
+        <option value="vi">Vietnamese</option>
+        <option value="ms">Malay</option>
+        <option value="fa">Persian</option>
+        <option value="sr">Serbian</option>
+        <option value="hr">Croatian</option>
+        <option value="sk">Slovak</option>
+        <option value="sl">Slovenian</option>
+        <option value="lt">Lithuanian</option>
+        <option value="lv">Latvian</option>
+        <option value="et">Estonian</option>
+        <option value="ta">Tamil</option>
+        <option value="bn">Bengali</option>
+        <option value="fil">Filipino</option>
+        <option value="sw">Swahili</option>
+        <option value="ca">Catalan</option>
+        <option value="eu">Basque</option>
+        <option value="gl">Galician</option>
+        <option value="mt">Maltese</option>
+      </select>
+    </div>
+    <div className="mb-2">
+      <textarea
+        ref={textareaRef}
+        placeholder="Add any additional details about your situation, preferences, or specific questions you have..."
+        className="w-full resize-none rounded-lg border border-border p-3 text-foreground focus:border-primary focus:outline-none"
+        value={extraContext}
+        onChange={handleTextareaChange}
+        rows={4}
+        maxLength={500}
+      ></textarea>
+      <div className="text-right text-xs text-muted-foreground">{extraContext.length}/500</div>
+    </div>
               <div className="mt-6 flex justify-between">
                 <Button variant="outline" onClick={handlePrevStep}>
                   Back
@@ -362,19 +401,20 @@ export default function PromptBuilder() {
 
           {step === 4 && (
             <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-[#1f1f1f]">Your personalized prompt</h2>
+              <h2 className="mb-6 text-center text-xl font-semibold text-foreground">Your personalized prompt</h2>
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-medium text-[#1f1f1f]">Generated Prompt</h3>
+                  <h3 className="text-sm font-medium text-foreground">Generated Prompt</h3>
                   <button
+                    type="button"
                     onClick={() => setPromptCollapsed(!promptCollapsed)}
-                    className="text-xs text-[#4f46e5] hover:underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     {promptCollapsed ? "Show prompt" : "Hide prompt"}
                   </button>
                 </div>
                 {!promptCollapsed && (
-                  <div className="rounded-lg bg-muted border p-4 mb-3">
+                  <div className="rounded-lg bg-muted border-border border p-4 mb-3">
                     <pre className="whitespace-pre-wrap text-sm">{prompt}</pre>
                   </div>
                 )}
@@ -391,20 +431,20 @@ export default function PromptBuilder() {
                   id="updates"
                   checked={sendUpdates}
                   onChange={(e) => setSendUpdates(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#4f46e5] focus:ring-[#4f46e5]"
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 />
-                <label htmlFor="updates" className="ml-2 text-sm text-[#1f1f1f]">
+                <label htmlFor="updates" className="ml-2 text-sm text-foreground">
                   Send me updates
                 </label>
               </div>
               {sendUpdates && (
-                <div className="mb-4 text-sm text-gray-500">
+                <div className="mb-4 text-sm text-muted-foreground">
                   You'll receive updates about new features and improvements.
                 </div>
               )}
-              <div className="mt-6 text-center text-xs text-gray-500">
+              <div className="mt-6 text-center text-xs text-muted-foreground">
                 Feedback?{" "}
-                <a href="mailto:feedback@example.com" className="text-[#4f46e5]">
+                <a href="mailto:feedback@example.com" className="text-primary">
                   feedback@example.com
                 </a>
               </div>
@@ -412,6 +452,6 @@ export default function PromptBuilder() {
           )}
         </div>
       </div>
-    </div>
+    </>
   )
 }

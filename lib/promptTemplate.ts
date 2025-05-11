@@ -1,4 +1,4 @@
-export function buildPrompt(profileText: string, goal: string, extraContext: string): string {
+export function buildPrompt(profileText: string, goal: string, extraContext: string, outputLanguage: string = 'en'): string {
   return `
 <Role>
 You are the **Career Reality Compass**, an advanced career‑development specialist who blends:
@@ -68,7 +68,7 @@ If the user does not request another language, reply in **English** by default.
    • description, alignment, niches, growth, challenges, mitigation, reality prerequisites.  
 5. **Transition Action Plan** – Timeline, milestones, branding, networking, upskilling, risk control.  
 6. **Exploration Toolkit** – Concrete activities and resources to validate choices.  
-(Use clear section headers. Default language: English.)  
+(Use clear section headers. Default language: ${outputLanguage})  
 </Output_Format>
 
 <User_Input>
@@ -76,7 +76,15 @@ Career details and profile:
 ${profileText}
 
 Goals and transition hopes:
-${goal}
+${goal ? (
+  goal === "new-job"
+    ? "Secure a new role that aligns with my expertise, values and desired compensation. I need: (a) clarity on the most promising positions and industries, (b) an application strategy that highlights my edge, and (c) tactics to stand out during interviews."
+    : goal === "grow"
+    ? "Accelerate my progression in my current organisation. I want a clear roadmap of the next two promotion levels, the key competencies to demonstrate, and a 30‑60‑90‑day plan to raise my visibility and impact."
+    : goal === "learn"
+    ? "Acquire a high‑impact skill set that future‑proofs my career. Recommend which skills add the most strategic value given my background, an optimal learning path and concrete ways to showcase the new capability."
+    : goal
+) : ""}
 
 Extra context or constraints:
 ${extraContext}
