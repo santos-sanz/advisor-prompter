@@ -6,7 +6,7 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "CV Prompt Builder",
+  title: "Career Prompt Builder",
   description: "Build personalized prompts for career advice",
 }
 
@@ -20,6 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script async src="https://tally.so/widgets/embed.js"></script>
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

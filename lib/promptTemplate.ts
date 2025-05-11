@@ -86,8 +86,7 @@ ${goal ? (
     : goal
 ) : ""}
 
-Extra context or constraints:
-${extraContext}
+${extraContext ? `Extra context or constraints:\n${extraContext}` : ""}
 
 When you need more information to proceed, ask focused follow-up questions specific to what is missing or unclear. Do not prompt for additional details unless required for the next step of the assessment.
 </User_Input>
