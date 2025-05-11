@@ -11,11 +11,11 @@ async function initPdfLib() {
   
   if (!pdfjsLib) {
     // Dynamic import to ensure this only happens client-side
-    const pdfjs = await import('pdfjs-dist/legacy/build/pdf');
+    const pdfjs = await import('pdfjs-dist');
     pdfjsLib = pdfjs;
     
     // Set worker source
-    const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.entry');
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.mjs');
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
   }
   
