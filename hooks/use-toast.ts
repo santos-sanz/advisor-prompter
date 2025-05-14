@@ -9,6 +9,9 @@ let toastTimeout: ReturnType<typeof setTimeout> | null = null;
 let toastEl: HTMLDivElement | null = null;
 
 export function toast({ title, description, duration = 3000 }: ToastProps) {
+  // Toasts are disabled
+  return;
+
   const now = Date.now();
   if (now - lastToastTime < 1000) {
     // Ignore if less than 1 second passed
