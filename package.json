@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource/architects-daughter": "^5.2.5",
+    "@fontsource/caveat": "^5.2.5",
+    "@fontsource/indie-flower": "^5.2.5",
     "@radix-ui/react-slot": "^1.0.2",
     "@tailwindcss/postcss": "^4.1.6",
     "@vercel/analytics": "^1.1.1",

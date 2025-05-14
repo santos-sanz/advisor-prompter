@@ -17,6 +17,7 @@ import { TallyScript } from "@/components/tally-script"
 const inter = Inter({ subsets: ["latin"] })
 
 export default function PromptBuilder() {
+
   // Theme toggle button fixed at top left
   const themeToggle = (
     <div className="fixed top-4 left-4 z-50">
@@ -211,18 +212,18 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
         )}
         <div className="w-[92%] max-w-md mx-auto sm:max-w-lg md:max-w-xl lg:max-w-2xl rounded-xl bg-white shadow-lg p-4 sm:p-6 md:p-8">
           <div className="mb-8 flex items-center justify-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-center text-foreground">Career Prompt Builder</h1>
+            <h1 className="text-2xl sm:text-3xl font-sans font-extrabold tracking-wide text-center text-primary">Career Prompt Builder</h1>
           </div>
           {step === 1 && (
             <div>
-              <h2 className="mb-4 sm:mb-6 text-center text-lg sm:text-xl font-semibold text-foreground">Your details</h2>
+              <h2 className="font-sans mb-4 sm:mb-6 text-center text-lg sm:text-xl font-sans font-semibold text-foreground">Your details</h2>
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm text-primary">
-                  <strong>Your privacy is important:</strong> Files are processed locally in your browser and never sent to a server.
-                </p>
+                <p className="text-sm font-sans text-primary">
+  <strong className="font-caveat">Your privacy is important:</strong> Files are processed locally in your browser and never sent to a server.
+</p>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#1f1f1f]">CV Upload</label>
+                <label className="mb-2 block text-sm font-sans font-medium text-[#1f1f1f]">CV Upload</label>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -240,17 +241,17 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
                   {isProcessing ? (
                     <>
                       <Loader2 className="mb-2 h-8 w-8 animate-spin text-primary" />
-                      <span>Processing {file?.name}...</span>
+                      <span className="font-sans">Processing {file?.name}...</span>
                     </>
                   ) : (
                     <>
                       <Upload className="mb-2 h-8 w-8" />
-                      <span>{file ? file.name : "Drag & drop or click to upload your CV (PDF)"}</span>
+                      <Button className="font-sans">{file ? file.name : "Drag & drop or click to upload your CV (PDF)"}</Button>
                     </>
                   )}
                 </div>
                 {file && !isProcessing && (
-                  <div className="mt-4 flex items-center text-success">
+                  <div className="mt-4 flex items-center text-success font-sans">
                     <CheckCircle className="mr-2 h-5 w-5" />
                     File uploaded successfully
                   </div>
@@ -258,7 +259,7 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
                 {extractedMarkdown && (
   <div className="mt-4">
     <label
-      className="block text-sm font-medium mb-2 text-foreground cursor-pointer select-none"
+      className="block text-sm font-sans font-medium mb-2 text-foreground cursor-pointer select-none"
       onClick={() => setExtractedExpanded((v) => !v)}
       aria-expanded={extractedExpanded}
       tabIndex={0}
@@ -269,7 +270,7 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
     </label>
     {extractedExpanded && (
       <pre
-        className="bg-muted p-2 rounded text-xs whitespace-pre-wrap border border-border transition-all duration-200 max-h-60 overflow-auto"
+        className="bg-muted p-2 rounded text-xs font-sans whitespace-pre-wrap border border-border transition-all duration-200 max-h-60 overflow-auto"
       >
         {extractedMarkdown}
       </pre>
@@ -278,12 +279,13 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
 )}
               </div>
               <div className="mt-6 flex justify-between">
-                <Button variant="outline" onClick={handlePrevStep} disabled>
+                <Button variant="outline" onClick={handlePrevStep} disabled className="font-sans">
                   Back
                 </Button>
                 <Button 
                   onClick={handleNextStep}
                   disabled={!file}
+                  className="font-sans"
                 >
                   Next
                 </Button>
@@ -293,8 +295,8 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
 
           {step === 2 && (
             <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-foreground">What's your goal?</h2>
-              <div className="mb-6 grid gap-4">
+              <h2 className="font-sans mb-6 text-center text-xl font-semibold text-foreground">What's your goal?</h2>
+              <div className="mb-6 grid gap-4 font-sans">
                 {[
                   { id: "new-job", title: "Get a new job", desc: "Find opportunities in your field" },
                   { id: "grow", title: "Grow in current role", desc: "Advance your career path" },
@@ -311,10 +313,10 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
                 ))}
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={handlePrevStep}>
+                <Button variant="outline" onClick={handlePrevStep} className="font-sans">
                   Back
                 </Button>
-                <Button onClick={handleNextStep} disabled={!goal}>
+                <Button onClick={handleNextStep} disabled={!goal} className="font-sans">
                   Next
                 </Button>
               </div>
@@ -323,12 +325,12 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
 
           {step === 3 && (
   <div>
-    <h2 className="mb-6 text-center text-xl font-semibold text-foreground">Extra context</h2>
+    <h2 className="font-sans mb-6 text-center text-xl font-semibold text-foreground">Extra context</h2>
     <div className="mb-4">
-      <label htmlFor="output-language" className="block text-sm font-medium mb-2 text-foreground">Output language</label>
+      <label htmlFor="output-language" className="block text-sm font-medium mb-2 text-foreground font-sans">Output language</label>
       <select
         id="output-language"
-        className="w-full rounded-lg border border-border p-2 text-foreground bg-background focus:border-primary focus:outline-none"
+        className="w-full rounded-lg border border-border p-2 text-foreground bg-background focus:border-primary focus:outline-none font-sans"
         value={outputLanguage}
         onChange={e => setOutputLanguage(e.target.value)}
       >
@@ -384,54 +386,58 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
       <textarea
         ref={textareaRef}
         placeholder="Add any additional details about your situation, preferences, or specific questions you have..."
-        className="w-full max-w-full resize-none rounded-lg border border-border p-2 sm:p-3 text-foreground focus:border-primary focus:outline-none box-border"
+        className="w-full max-w-full resize-none rounded-lg border border-border p-2 sm:p-3 text-foreground focus:border-primary focus:outline-none box-border font-sans"
         value={extraContext}
         onChange={handleTextareaChange}
         rows={4}
         maxLength={500}
         style={{ overflowX: 'hidden' }}
       ></textarea>
-      <div className="text-right text-xs text-muted-foreground">{extraContext.length}/500</div>
+      <div className="text-right text-xs text-muted-foreground font-sans">{extraContext.length}/500</div>
     </div>
               <div className="mt-6 flex justify-between">
-                <Button variant="outline" onClick={handlePrevStep} className="min-w-[80px] h-10">
+                <Button variant="outline" onClick={handlePrevStep} className="min-w-[80px] h-10 font-sans">
                   Back
                 </Button>
-                <Button onClick={handleNextStep} className="min-w-[80px] h-10">Next</Button>
+                <Button onClick={handleNextStep} className="min-w-[80px] h-10 font-sans">Next</Button>
               </div>
             </div>
           )}
 
           {step === 4 && (
             <div>
-              <h2 className="mb-6 text-center text-xl font-semibold text-foreground">Your personalized prompt</h2>
-<div className="mb-4 text-center text-base text-muted-foreground">
+              {/* Main title using Indie Flower */}
+
+
+{/* Section heading using Caveat */}
+<h2 className="font-sans mb-6 text-center text-xl text-foreground">Your personalized prompt</h2>
+<div className="mb-4 text-center text-base font-sans text-muted-foreground">
   <strong>Tip:</strong> For the best results, copy and paste this prompt into a DeepResearch-capable AI tool such as <b>ChatGPT</b>, <b>Claude</b>, <b>Grok</b>, <b>Perplexity</b>, <b>Gemini</b>, or <b>Le Chat</b>.
 </div>
               <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-medium text-foreground">Generated Prompt</h3>
+                <div className="flex justify-between items-center mb-2 font-sans">
+                  <h3 className="text-sm text-foreground">Generated Prompt</h3>
                   <button
                     type="button"
                     onClick={() => setPromptCollapsed(!promptCollapsed)}
-                    className="text-xs text-primary hover:underline"
+                    className="text-xs font-sans font-medium text-primary underline underline-offset-4 hover:decoration-2 transition"
                   >
                     {promptCollapsed ? "Show prompt" : "Hide prompt"}
                   </button>
                 </div>
                 {!promptCollapsed && (
                   <div className="rounded-lg bg-muted border-border border p-4 mb-3">
-                    <pre className="whitespace-pre-wrap text-sm">{prompt}</pre>
+                    <pre className="whitespace-pre-wrap text-base font-sans leading-relaxed">{prompt}</pre>
                   </div>
                 )}
               </div>
               <div className="mb-6 flex flex-wrap gap-3 justify-center sm:justify-start">
-                <Button onClick={copyPrompt} className="min-w-[120px] h-10">Copy prompt</Button>
-                <Button variant="outline" onClick={downloadPrompt} className="min-w-[120px] h-10">
+                <Button onClick={copyPrompt} className="min-w-[120px] h-10 font-sans">Copy prompt</Button>
+                <Button variant="outline" onClick={downloadPrompt} className="min-w-[120px] h-10 font-sans">
                   Download
                 </Button>
               </div>
-              <div className="mb-4 flex items-center">
+              <div className="mb-4 flex items-center font-sans">
                 <input
                   type="checkbox"
                   id="updates"
@@ -456,7 +462,7 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
                   </iframe>
                 </div>
               )}
-              <div className="mt-6 text-center text-xs text-muted-foreground">
+              <div className="mt-6 text-center text-xs font-sans text-muted-foreground">
                 Feedback?{" "}
                 <a href="mailto:andres@theemptylab.com" className="text-primary">
                   andres@theemptylab.com

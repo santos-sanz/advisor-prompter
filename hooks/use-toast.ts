@@ -32,14 +32,14 @@ export function toast({ title, description, duration = 3000 }: ToastProps) {
 
   // Create toast content
   const titleEl = document.createElement("div");
-  titleEl.className = "font-semibold text-foreground";
+  titleEl.className = "font-sans font-semibold text-foreground";
   titleEl.textContent = title;
 
   toastEl.appendChild(titleEl);
 
   if (description) {
     const descEl = document.createElement("div");
-    descEl.className = "text-sm text-muted-foreground mt-1";
+    descEl.className = "font-sans text-sm text-muted-foreground mt-1";
     descEl.textContent = description;
     toastEl.appendChild(descEl);
   }

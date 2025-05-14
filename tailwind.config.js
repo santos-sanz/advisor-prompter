@@ -51,7 +51,9 @@ module.exports = {
         xl: "var(--radius-xl)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "sans-serif"],
+        sans: ["var(--font-sans)", "Architects Daughter", "sans-serif"],
+        indie: ["Indie Flower", "cursive"],
+        caveat: ["Caveat", "cursive"],
         mono: ["var(--font-mono)", "monospace"],
         serif: ["var(--font-serif)", "serif"],
       },

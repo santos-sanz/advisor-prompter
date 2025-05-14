@@ -1,9 +1,10 @@
 import type React from "react"
 import "./globals.css"
-import { Inter } from "next/font/google"
 
-// Static fonts that don't rely on client-side JS
-const inter = Inter({ subsets: ["latin"] })
+// Import the handwriting fonts
+import "@fontsource/architects-daughter"
+import "@fontsource/indie-flower"
+import "@fontsource/caveat"
 
 export const metadata = {
   title: "Career Prompt Builder",
@@ -23,7 +24,7 @@ export default function RootLayout({
       <head>
         <script async src="https://tally.so/widgets/embed.js"></script>
       </head>
-      <body className={inter.className}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>
