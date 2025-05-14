@@ -49,44 +49,63 @@ function convertToMarkdown(text: string): string {
 
 export default function PdfClient({ file, onExtracted, onProcessingChange }: PdfClientProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
 
-  useEffect(() => {
-    // Function to safely load PDF.js and worker
-    const loadPdfJs = async () => {
-      // First, check if already loaded
-      if (typeof window !== 'undefined' && window.pdfjsLib) {
-        return; // Already loaded
-      }
+  // Function to safely load PDF.js and worker
+  const loadPdfJs = async () => {
+    // First, check if already loaded
+    if (typeof window !== 'undefined' && window.pdfjsLib) {
+      setPdfJsLoaded(true);
+      return true; // Already loaded
+    }
 
-      try {
-        // Use the latest stable version for both the library and worker (v3.11.174)
-        const PDF_VERSION = '3.11.174';
+    try {
+      // Use the latest stable version for both the library and worker (v3.11.174)
+      const PDF_VERSION = '3.11.174';
+      
+      // First load the main library
+      const pdfScript = document.createElement('script');
+      pdfScript.src = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDF_VERSION}/build/pdf.min.js`;
+      pdfScript.async = true;
+      
+      // Wait for main script to load
+      await new Promise((resolve, reject) => {
+        pdfScript.onload = resolve;
+        pdfScript.onerror = reject;
+        document.head.appendChild(pdfScript);
+      });
+      
+      // Then load the worker (needs to be done after main script)
+      // This step is crucial - avoids the Object.defineProperty error
+      if (window.pdfjsLib) {
+        // Load the worker script
+        const workerScript = document.createElement('script');
+        workerScript.src = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDF_VERSION}/build/pdf.worker.min.js`;
+        workerScript.async = true;
         
-        // First load the main library
-        const pdfScript = document.createElement('script');
-        pdfScript.src = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDF_VERSION}/build/pdf.min.js`;
-        pdfScript.async = true;
-        
-        // Wait for main script to load
         await new Promise((resolve, reject) => {
-          pdfScript.onload = resolve;
-          pdfScript.onerror = reject;
-          document.head.appendChild(pdfScript);
+          workerScript.onload = resolve;
+          workerScript.onerror = reject;
+          document.head.appendChild(workerScript);
         });
         
-        // Then load the worker (needs to be done after main script)
-        // This step is crucial - avoids the Object.defineProperty error
-        if (window.pdfjsLib) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDF_VERSION}/build/pdf.worker.min.js`;
-        } else {
-          console.error('PDF.js library failed to load properly');
-        }
-      } catch (error) {
-        console.error('Error loading PDF.js:', error);
+        // Set worker location
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDF_VERSION}/build/pdf.worker.min.js`;
+        
+        setPdfJsLoaded(true);
+        return true;
+      } else {
+        console.error('PDF.js library failed to load properly');
+        return false;
       }
-    };
+    } catch (error) {
+      console.error('Error loading PDF.js:', error);
+      return false;
+    }
+  };
 
-    // Load PDF.js when component mounts
+  // Load PDF.js when component mounts
+  useEffect(() => {
     loadPdfJs();
   }, []);
 
@@ -95,7 +114,18 @@ export default function PdfClient({ file, onExtracted, onProcessingChange }: Pdf
       if (!file) return;
       
       try {
-        // Check if PDF.js is loaded
+        setIsLoading(true);
+        onProcessingChange(true);
+        
+        // Make sure PDF.js is loaded before proceeding
+        if (!pdfJsLoaded) {
+          const loaded = await loadPdfJs();
+          if (!loaded) {
+            throw new Error('Failed to load PDF.js library');
+          }
+        }
+        
+        // Double-check that PDF.js is actually loaded
         if (typeof window === 'undefined' || !window.pdfjsLib) {
           throw new Error('PDF.js library not loaded');
         }
@@ -169,7 +199,7 @@ export default function PdfClient({ file, onExtracted, onProcessingChange }: Pdf
     if (file) {
       extractPdfContent();
     }
-  }, [file, onExtracted, onProcessingChange]);
+  }, [file, onExtracted, onProcessingChange, pdfJsLoaded]);
 
 
   // This component doesn't render any UI elements
