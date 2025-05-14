@@ -411,8 +411,12 @@ const [outputLanguage, setOutputLanguage] = useState('en') // Default: English
 
 {/* Section heading using Caveat */}
 <h2 className="font-sans mb-6 text-center text-xl text-foreground">Your personalized prompt</h2>
-<div className="mb-4 text-center text-base font-sans text-muted-foreground">
-  <strong>Tip:</strong> For the best results, copy and paste this prompt into a DeepResearch-capable AI tool such as <b>ChatGPT</b>, <b>Claude</b>, <b>Grok</b>, <b>Perplexity</b>, <b>Gemini</b>, or <b>Le Chat</b>.
+<div className="mb-4">
+  <div className="mx-auto max-w-xl rounded-xl border bg-background p-4 shadow-lg text-center">
+    <span className="text-base font-sans text-muted-foreground">
+      <strong>Tip:</strong> For the best results, copy and paste this prompt into a DeepResearch-capable AI tool such as <b>ChatGPT</b>, <b>Claude</b>, <b>Grok</b>, <b>Perplexity</b>, <b>Gemini</b>, or <b>Le Chat</b>.
+    </span>
+  </div>
 </div>
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2 font-sans">
